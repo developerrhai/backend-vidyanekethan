@@ -33,12 +33,16 @@ async function seed() {
   /* ── 1. Admin ────────────────────────────────────────── */
   const hash = await bcrypt.hash("admin123", 10);
   const [adminResult] = await db.query(
-    `INSERT INTO admins (name, email, password, institute, address)
-     VALUES (?, ?, ?, ?, ?)`,
+   /* `INSERT INTO admins (name, email, password, institute, address)
+     VALUES (?, ?, ?, ?, ?)`, */
+    `INSERT INTO admins (name, email, password, role, institute, address)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+
     [
       "Admin User",
       "admin@meritome.com",
       hash,
+      "admin",
       "Merit Home Private Limited",
       "123 Education Street, Pune, Maharashtra 411001",
     ]

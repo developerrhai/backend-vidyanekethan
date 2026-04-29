@@ -147,6 +147,96 @@ CREATE TABLE IF NOT EXISTS finance_records (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `;
 
+-- ─────────────────────────────────────────────────────────
+-- 8. branches
+-- ─────────────────────────────────────────────────────────
+
+-- 1. Branches (The parent entity)
+
+CREATE TABLE IF NOT EXISTS branches (
+  branch_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  branch_name VARCHAR(255) NOT NULL UNIQUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2. Batches (Linked to a Branch)
+CREATE TABLE IF NOT EXISTS batches (
+  batch_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  branch_id INT UNSIGNED NOT NULL, -- Identity: Which branch owns this batch?
+  batch_name VARCHAR(255) NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  batch_start_date DATE NOT NULL,
+  batch_end_date DATE NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_batch_branch 
+    FOREIGN KEY (branch_id) REFERENCES branches(branch_id) 
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- 2. Boards (Universal - defined once for the whole institute)
+CREATE TABLE IF NOT EXISTS boards (
+  board_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE IF NOT EXISTS standards (
+  stand_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  board_id INT UNSIGNED NOT NULL,
+  batch_id INT UNSIGNED NOT NULL,
+  name VARCHAR(50) NOT NULL,
+  CONSTRAINT fk_std_board FOREIGN KEY (board_id) REFERENCES boards(board_id),
+  CONSTRAINT fk_std_batch FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Subjects
+CREATE TABLE IF NOT EXISTS subjects (
+  sub_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  stand_id INT UNSIGNED NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  teacher_id INT UNSIGNED NULL,
+  CONSTRAINT fk_sub_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+  CONSTRAINT fk_sub_std FOREIGN KEY (stand_id) REFERENCES standards(stand_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+-- Chapters table remains the same
+CREATE TABLE IF NOT EXISTS chapters (
+  chap_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sub_id INT UNSIGNED NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  CONSTRAINT fk_chapter_subject FOREIGN KEY (sub_id) REFERENCES subjects(sub_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- New Topics table linked to Chapter
+CREATE TABLE IF NOT EXISTS topics (
+  topic_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  chap_id INT UNSIGNED NOT NULL,
+  topic_name VARCHAR(255) NOT NULL,
+  start_date DATE,
+  end_date DATE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_topic_chapter FOREIGN KEY (chap_id) REFERENCES chapters(chap_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Notes
+CREATE TABLE IF NOT EXISTS notes (
+  note_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  chap_id INT UNSIGNED NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  file_url VARCHAR(500) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_notes_chapter FOREIGN KEY (chap_id) REFERENCES chapters(chap_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+`;
+
+
+
 async function migrate() {
   // Connect WITHOUT specifying a database so we can CREATE it
   const conn = await mysql.createConnection({

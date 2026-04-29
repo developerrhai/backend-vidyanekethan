@@ -1,5 +1,20 @@
 const db = require("../config/db");
 
+
+exports.getTeachers = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM teachers"
+    );
+    // parse subjects JSON string → array
+    // const data = rows.map((r) => ({ ...r, subjects: r.subjects ? JSON.parse(r.subjects) : [] }));
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
 exports.getAll = async (req, res) => {
   try {
     const [rows] = await db.query(

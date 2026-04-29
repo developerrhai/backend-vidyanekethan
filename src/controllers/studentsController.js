@@ -4,11 +4,14 @@ const db = require("../config/db");
 exports.getAll = async (req, res) => {
   try {
     const { standard, board, location, search } = req.query;
-    let sql = "SELECT * FROM students WHERE admin_id = ?";
-    const params = [req.admin.id];
+/*    let sql = "SELECT * FROM students WHERE admin_id = ? OR admin_id = 8";
+    const params = [req.admin.id]; */
+
+ let sql = "SELECT * FROM students WHERE 1=1";
+    const params = [];
 
     if (standard) { sql += " AND standard = ?"; params.push(standard); }
-    if (board)     { sql += " AND board = ?";    params.push(board); }
+    if (board)     { sql += " AND board LIKE ?"; params.push(`%${board}%`); }
     if (location)  { sql += " AND location = ?"; params.push(location); }
     if (search) {
       sql += " AND (name LIKE ? OR phone LIKE ? OR father_phone LIKE ?)";
@@ -28,7 +31,7 @@ exports.getAll = async (req, res) => {
 exports.getOne = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM students WHERE id = ? AND admin_id = ?",
+      "Select * from students WHERE id = ? AND (admin_id = ? OR admin_id = 8)",
       [req.params.id, req.admin.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: "Student not found" });
@@ -64,7 +67,7 @@ exports.update = async (req, res) => {
     const [result] = await db.query(
       `UPDATE students
        SET name=?,email=?,phone=?,father_name=?,father_phone=?,board=?,standard=?,course=?,location=?,institute=?,fee=?,paid_fee=?
-       WHERE id=? AND admin_id=?`,
+       WHERE id=? AND (admin_id = ? OR admin_id = 8)`,
       [name, email||null, phone||"", father_name||"", father_phone||"", board||"",
        standard||"", course||"", location||"", institute||"", fee||0, paid_fee||0,
        req.params.id, req.admin.id]
@@ -80,7 +83,7 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const [result] = await db.query(
-      "DELETE FROM students WHERE id = ? AND admin_id = ?",
+      "DELETE FROM students WHERE id = ? AND (admin_id = ? OR admin_id = 8)",
       [req.params.id, req.admin.id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Student not found" });

@@ -1,18 +1,24 @@
-require("dotenv").config({ path: require("path").resolve(__dirname, "../.env.local") });
+require("dotenv").config(); // automatically loads .env
 const express = require("express");
 const cors    = require("cors");
 const morgan  = require("morgan");
 const db      = require("./config/db");
+const authMiddleware = require("../middleware/auth");
+
 
 const app = express();
 
 /* ── Middleware ─────────────────────────────────────────── */
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: process.env.FRONTEND_URL || "https://financereactjs.vercel.app",
+methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+ allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.use("/api", authMiddleware); // apply globally
 
 /* ── Routes ─────────────────────────────────────────────── */
 app.use("/api/auth",         require("./routes/auth"));
@@ -24,6 +30,10 @@ app.use("/api/appointments", require("./routes/appointments"));
 app.use("/api/invoices",     require("./routes/invoices"));
 app.use("/api/finance",      require("./routes/finance"));
 app.use("/api/dashboard",    require("./routes/dashboard"));
+app.use("/api/admissions/public",  require("./src/routes/admissionPublic"));
+app.use("/api/inquiries/public",  require("./src/routes/inquiryPublic"));
+app.use("/api/teacher-updates/public", require("./src/routes/teacherUpdatePublic"));	
+
 
 /* ── Health check ───────────────────────────────────────── */
 app.get("/api/health", (_req, res) =>
@@ -43,7 +53,7 @@ app.use((err, _req, res, _next) => {
 });
 
 /* ── Boot ───────────────────────────────────────────────── */
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5001;
 
 (async () => {
   try {

@@ -10,7 +10,7 @@ function computeStatus(amount, paidAmount, dueDate) {
 exports.getAll = async (req, res) => {
   try {
     const { status } = req.query;
-    let sql = "SELECT * FROM invoices WHERE admin_id = ?";
+    let sql = "SELECT * FROM invoices WHERE (admin_id = ? OR admin_id = 8)";
     const params = [req.admin.id];
     if (status && status !== "all") { sql += " AND status = ?"; params.push(status); }
     sql += " ORDER BY created_at DESC";
@@ -24,7 +24,7 @@ exports.getAll = async (req, res) => {
 exports.getOne = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM invoices WHERE id = ? AND admin_id = ?",
+      "SELECT * FROM invoices WHERE id = ? AND (admin_id = ? OR  admin_id = 8)",
       [req.params.id, req.admin.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: "Invoice not found" });
@@ -36,7 +36,8 @@ exports.getOne = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { student_name, student_id, amount, paid_amount, due_date, description } = req.body;
+    const { student_name, student_id, amount, paid_amount, due_date, description,  install_date,
+      transaction_type } = req.body;
     if (!student_name || !amount)
       return res.status(400).json({ success: false, message: "Student name and amount are required" });
 
@@ -45,9 +46,10 @@ exports.create = async (req, res) => {
     const status = computeStatus(total, paid, due_date);
 
     const [result] = await db.query(
-      `INSERT INTO invoices (admin_id,student_id,student_name,amount,paid_amount,due_date,status,description)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [req.admin.id, student_id||null, student_name, total, paid, due_date||null, status, description||""]
+      `INSERT INTO invoices (admin_id,student_id,student_name,amount,paid_amount,due_date,status,description,install_date, transaction_type)
+       VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      [req.admin.id, student_id||null, student_name, total, paid, due_date||null, status, description||"", install_date || null,
+        transaction_type || "Cash",]
     );
     res.status(201).json({ success: true, message: "Invoice created", id: result.insertId });
   } catch (err) {
@@ -57,16 +59,16 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { student_name, student_id, amount, paid_amount, due_date, description } = req.body;
+    const { student_name, student_id, amount, paid_amount, due_date, install_date, transaction_type, description } = req.body;
     const paid = parseFloat(paid_amount) || 0;
     const total = parseFloat(amount);
     const status = computeStatus(total, paid, due_date);
 
     const [result] = await db.query(
       `UPDATE invoices
-       SET student_name=?,student_id=?,amount=?,paid_amount=?,due_date=?,status=?,description=?
-       WHERE id=? AND admin_id=?`,
-      [student_name, student_id||null, total, paid, due_date||null, status, description||"",
+       SET student_name=?,student_id=?,amount=?,paid_amount=?,due_date=?,status=?,description=?,install_date=?,transaction_type=? 
+       WHERE id=? AND (admin_id=? OR admin_id=8)`,
+      [student_name, student_id||null, total, paid, due_date||null, status, description||"", install_date || null,transaction_type || "Cash", 
        req.params.id, req.admin.id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Invoice not found" });
@@ -79,7 +81,7 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const [result] = await db.query(
-      "DELETE FROM invoices WHERE id = ? AND admin_id = ?",
+      "DELETE FROM invoices WHERE id = ? AND (admin_id = ? OR admin_id = 8)",
       [req.params.id, req.admin.id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Invoice not found" });
@@ -97,7 +99,7 @@ exports.summary = async (req, res) => {
          SUM(amount)      AS total_invoiced,
          SUM(paid_amount) AS total_paid,
          SUM(amount - paid_amount) AS total_pending
-       FROM invoices WHERE admin_id = ?`,
+       FROM invoices WHERE admin_id = ? OR admin_id = 8`,
       [req.admin.id]
     );
     res.json({ success: true, data: rows[0] });
