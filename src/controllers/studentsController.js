@@ -1,9 +1,9 @@
 const db = require("../config/db");
 
-/* GET /api/students?standard=&board=&location=&search= */
+/* GET /api/students?standard=&course=&branch=&search= */
 exports.getAll = async (req, res) => {
   try {
-    const { standard, board, location, search } = req.query;
+    const { standard, course, branch, search } = req.query;
 /*    let sql = "SELECT * FROM students WHERE admin_id = ? OR admin_id = 8";
     const params = [req.admin.id]; */
 
@@ -11,8 +11,8 @@ exports.getAll = async (req, res) => {
     const params = [];
 
     if (standard) { sql += " AND standard = ?"; params.push(standard); }
-    if (board)     { sql += " AND board LIKE ?"; params.push(`%${board}%`); }
-    if (location)  { sql += " AND location = ?"; params.push(location); }
+    if (course)     { sql += " AND course LIKE ?"; params.push(`%${course}%`); }
+    if (branch)  { sql += " AND branch = ?"; params.push(branch); }
     if (search) {
       sql += " AND (name LIKE ? OR phone LIKE ? OR father_phone LIKE ?)";
       const like = `%${search}%`;
@@ -41,18 +41,20 @@ exports.getOne = async (req, res) => {
   }
 };
 
+
+
 /* POST /api/students */
 exports.create = async (req, res) => {
   try {
-    const { name, email, phone, father_name, father_phone, board, standard, course, location, institute, fee, paid_fee } = req.body;
+    const { name, email, phone, father_name, father_phone, gender, academic_year, standard, course, branch, hostel, fee, paid_fee } = req.body;
     if (!name) return res.status(400).json({ success: false, message: "Name is required" });
 
     const [result] = await db.query(
       `INSERT INTO students
-         (admin_id,name,email,phone,father_name,father_phone,board,standard,course,location,institute,fee,paid_fee)
+         (admin_id,name,email,phone,father_name,father_phone,gender,academic_year,standard,course,branch,hostel,fee,paid_fee)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [req.admin.id, name, email||null, phone||"", father_name||"", father_phone||"",
-       board||"", standard||"", course||"", location||"", institute||"", fee||0, paid_fee||0]
+       gender||"", academic_year||"", standard||"", course||"", branch||"", hostel||"", fee||0, paid_fee||0]
     );
     res.status(201).json({ success: true, message: "Student created", id: result.insertId });
   } catch (err) {
@@ -63,7 +65,7 @@ exports.create = async (req, res) => {
 /* PUT /api/students/:id */
 exports.update = async (req, res) => {
   try {
-    const { name, email, phone, father_name, father_phone, board, standard, course, location, institute, fee, paid_fee } = req.body;
+    const { name, email, phone, father_name, father_phone, gender, academic_year, standard, course, branch, hostel, fee, paid_fee } = req.body;
     const [result] = await db.query(
       `UPDATE students
        SET name=?,email=?,phone=?,father_name=?,father_phone=?,board=?,standard=?,course=?,location=?,institute=?,fee=?,paid_fee=?

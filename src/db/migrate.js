@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS admins (
   name        VARCHAR(100)  NOT NULL,
   email       VARCHAR(150)  NOT NULL UNIQUE,
   password    VARCHAR(255)  NOT NULL,
-  institute   VARCHAR(200)  NOT NULL DEFAULT '',
+ 
   address     TEXT,
   created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -37,15 +37,16 @@ CREATE TABLE IF NOT EXISTS students (
   id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   admin_id     INT UNSIGNED NOT NULL,
   name         VARCHAR(100) NOT NULL,
+  gender       ENUM('Male','Female', '') DEFAULT '',
+  academic_year VARCHAR(50)  DEFAULT '',
   email        VARCHAR(150) DEFAULT NULL,
   phone        VARCHAR(20)  DEFAULT '',
   father_name  VARCHAR(100) DEFAULT '',
   father_phone VARCHAR(20)  DEFAULT '',
-  board        ENUM('CBSE','ICSE','State','') DEFAULT '',
+  course        ENUM('JEE','NEET','Foundation','') DEFAULT '',
   standard     VARCHAR(10)  DEFAULT '',
-  course       VARCHAR(100) DEFAULT '',
-  location     VARCHAR(100) DEFAULT '',
-  institute    VARCHAR(200) DEFAULT '',
+  branch       ENUM('branch 1','branch 2', '') DEFAULT '',
+  hostel       ENUM('Yes','No', '')      DEFAULT '',
   fee          DECIMAL(10,2) DEFAULT 0.00,
   paid_fee     DECIMAL(10,2) DEFAULT 0.00,
   created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -145,7 +146,7 @@ CREATE TABLE IF NOT EXISTS finance_records (
   created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-`;
+
 
 -- ─────────────────────────────────────────────────────────
 -- 8. branches
