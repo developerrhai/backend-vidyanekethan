@@ -7,8 +7,8 @@ exports.getAll = async (req, res) => {
     const params = [];
 
     if (standard) { sql += " AND standard = ?"; params.push(standard); }
-    if (board) { sql += " AND board = ?"; params.push(board); }
-    if (location) { sql += " AND location = ?"; params.push(location); }
+    // if (board) { sql += " AND board = ?"; params.push(board); }
+    if (location) { sql += " AND branch = ?"; params.push(location); }
     if (search) {
       sql += " AND (name LIKE ? OR phone LIKE ? OR father_phone LIKE ? OR email LIKE ?)";
       const like = `%${search}%`;

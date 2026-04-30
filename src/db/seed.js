@@ -35,7 +35,7 @@ async function seed() {
   const [adminResult] = await db.query(
    /* `INSERT INTO admins (name, email, password, institute, address)
      VALUES (?, ?, ?, ?, ?)`, */
-    `INSERT INTO admins (name, email, password, role, institute, address)
+    `INSERT INTO admins (name, email, password, role, address)
      VALUES (?, ?, ?, ?, ?, ?)`,
 
     [
@@ -43,7 +43,6 @@ async function seed() {
       "admin@meritome.com",
       hash,
       "admin",
-      "Merit Home Private Limited",
       "123 Education Street, Pune, Maharashtra 411001",
     ]
   );
@@ -78,9 +77,9 @@ async function seed() {
   for (const s of students) {
     const [r] = await db.query(
       `INSERT INTO students
-         (admin_id,name,email,phone,father_name,father_phone,board,standard,course,location,institute,fee,paid_fee)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [adminId,s.name,s.email,s.phone,s.father_name,s.father_phone,s.board,s.standard,s.course,s.location,"Merit Home Pvt Ltd",s.fee,s.paid_fee]
+         (admin_id,name,email,phone,father_name,father_phone,standard,course,branch,fee,paid_fee)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      [adminId,s.name,s.email,s.phone,s.father_name,s.father_phone,s.standard,s.course,s.location,s.fee,s.paid_fee]
     );
     studentIds.push(r.insertId);
   }

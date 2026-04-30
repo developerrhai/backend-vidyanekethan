@@ -40,7 +40,7 @@
 
 		// Optional: Auto-create students for all students in this batch
 		const [students] = await db.query(
-		"SELECT id, name FROM students WHERE admin_id = ? AND location = ?",
+		"SELECT id, name FROM students WHERE admin_id = ? AND branch = ?",
 		[adminId, branch]
 		)
 

@@ -4,7 +4,7 @@ const db = require("../config/db");
 exports.getProfile = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT id, name, email, institute, address, created_at FROM admins WHERE id = ?",
+      "SELECT id, name, email, address, created_at FROM admins WHERE id = ?",
       [req.admin.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: "Admin not found" });
@@ -17,10 +17,10 @@ exports.getProfile = async (req, res) => {
 /* PUT /api/profile */
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, institute, address } = req.body;
+    const { name, email, address } = req.body;
     await db.query(
-      "UPDATE admins SET name=?, email=?, institute=?, address=? WHERE id=?",
-      [name, email, institute, address, req.admin.id]
+      "UPDATE admins SET name=?, email=?, address=? WHERE id=?",
+      [name, email, address, req.admin.id]
     );
     res.json({ success: true, message: "Profile updated" });
   } catch (err) {
