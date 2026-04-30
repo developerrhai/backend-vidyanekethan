@@ -51,7 +51,7 @@ exports.studentsByStandard = async (req, res) => {
 exports.studentsByLocation = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT location AS name, COUNT(*) AS count FROM students WHERE admin_id=? GROUP BY location",
+      "SELECT branch AS name, COUNT(*) AS count FROM students WHERE admin_id=? GROUP BY branch",
       [req.admin.id]
     );
     res.json({ success: true, data: rows });
