@@ -10,7 +10,15 @@ function computeStatus(amount, paidAmount, dueDate) {
 exports.getAll = async (req, res) => {
   try {
     const { status } = req.query;
-    let sql = "SELECT * FROM invoices WHERE (admin_id = ? OR admin_id = 8)";
+    let sql = `
+      SELECT 
+        invoices.*,
+        students.phone AS student_phone
+      FROM invoices
+      LEFT JOIN students 
+        ON invoices.student_id = students.id
+      WHERE invoices.admin_id = ?
+    `;
     const params = [req.admin.id];
     if (status && status !== "all") { sql += " AND status = ?"; params.push(status); }
     sql += " ORDER BY created_at DESC";
@@ -24,7 +32,7 @@ exports.getAll = async (req, res) => {
 exports.getOne = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM invoices WHERE id = ? AND (admin_id = ? OR  admin_id = 8)",
+      "SELECT * FROM invoices WHERE id = ? AND (admin_id = ?)",
       [req.params.id, req.admin.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: "Invoice not found" });
@@ -67,9 +75,9 @@ exports.update = async (req, res) => {
     const [result] = await db.query(
       `UPDATE invoices
        SET student_name=?,student_id=?,amount=?,paid_amount=?,due_date=?,status=?,description=?,install_date=?,transaction_type=? 
-       WHERE id=? AND (admin_id=? OR admin_id=8)`,
+       WHERE id=?`,
       [student_name, student_id||null, total, paid, due_date||null, status, description||"", install_date || null,transaction_type || "Cash", 
-       req.params.id, req.admin.id]
+       req.params.id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Invoice not found" });
     res.json({ success: true, message: "Invoice updated" });
@@ -81,8 +89,8 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const [result] = await db.query(
-      "DELETE FROM invoices WHERE id = ? AND (admin_id = ? OR admin_id = 8)",
-      [req.params.id, req.admin.id]
+      "DELETE FROM invoices WHERE id = ?",
+      [req.params.id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Invoice not found" });
     res.json({ success: true, message: "Invoice deleted" });

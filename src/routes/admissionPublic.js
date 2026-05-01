@@ -12,7 +12,7 @@ const db      = require("../config/db")
 
 router.post("/", async (req, res) => {
   try {
-    const { name, phone, email, father_name, father_phone, board, standard, course, location } = req.body
+    const { name, phone, email, father_name, father_phone, board, standard, course, branch, dob, address, aadhar } = req.body
 
     if (!name || !phone) {
       return res.status(400).json({ success: false, message: "Name and phone are required" })
@@ -28,14 +28,14 @@ router.post("/", async (req, res) => {
     if (!admins.length) {
       return res.status(500).json({ success: false, message: "No admin account configured" })
     }
-    const adminId = admins[0].id
+    const adminId = admins[0]?.id
 
     const [result] = await db.query(
       `INSERT INTO students
-         (admin_id, name, phone, email, father_name, father_phone, standard, course, branch, fee, paid_fee)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`,
+         (admin_id, name, phone, email, father_name, father_phone, standard, course, branch, dob, address, aadhar, fee, paid_fee)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, 0, 0)`,
       [
-        adminId,
+        adminId || 0,
         name,
         phone,
         email        || "",
@@ -44,7 +44,10 @@ router.post("/", async (req, res) => {
         // board        || "",
         standard     || "",
         course       || "",   // only filled for 11th & 12th
-        location     || "",
+        branch       || "",
+        dob          || null,
+        address      || "",
+        aadhar       || "",
       ]
     )
 

@@ -41,19 +41,17 @@ exports.getOne = async (req, res) => {
   }
 };
 
-
-
 /* POST /api/students */
 exports.create = async (req, res) => {
   try {
-    const { name, email, phone, father_name, father_phone, gender, academic_year, standard, course, branch, hostel, fee, paid_fee } = req.body;
+    const { admin_id,name, email, phone, father_name, father_phone, gender, academic_year, standard, course, branch, hostel, fee, paid_fee } = req.body;
     if (!name) return res.status(400).json({ success: false, message: "Name is required" });
 
     const [result] = await db.query(
       `INSERT INTO students
          (admin_id,name,email,phone,father_name,father_phone,gender,academic_year,standard,course,branch,hostel,fee,paid_fee)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [req.admin.id, name, email||null, phone||"", father_name||"", father_phone||"",
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?, ?)`,
+      [admin_id, name, email||null, phone||"", father_name||"", father_phone||"",
        gender||"", academic_year||"", standard||"", course||"", branch||"", hostel||"", fee||0, paid_fee||0]
     );
     res.status(201).json({ success: true, message: "Student created", id: result.insertId });
@@ -65,15 +63,18 @@ exports.create = async (req, res) => {
 /* PUT /api/students/:id */
 exports.update = async (req, res) => {
   try {
-    const { name, email, phone, father_name, father_phone, gender, academic_year, standard, course, branch, hostel, fee, paid_fee } = req.body;
+    const { admin_id,name, id, email, phone, father_name, father_phone, gender, academic_year, standard, course, branch, hostel, academy_fee, school_fee, hostel_fee, fee, paid_fee } = req.body;
     const [result] = await db.query(
       `UPDATE students
-       SET name=?,email=?,phone=?,father_name=?,father_phone=?,board=?,standard=?,course=?,location=?,institute=?,fee=?,paid_fee=?
-       WHERE id=? AND (admin_id = ? OR admin_id = 8)`,
-      [name, email||null, phone||"", father_name||"", father_phone||"", board||"",
-       standard||"", course||"", location||"", institute||"", fee||0, paid_fee||0,
-       req.params.id, req.admin.id]
+       SET name=?,email=?,phone=?,father_name=?,father_phone=?,standard=?,course=?,
+       branch=?,academy_fee=?,school_fee=?,hostel_fee=?,fee=?,paid_fee=?
+       WHERE id=?`,
+      [name, email||null, phone||"", father_name||"", father_phone||"",
+       standard||"", course||"", branch||"", academy_fee||0, school_fee||0, hostel_fee||0, fee||0, paid_fee||0,
+       id]
     );
+
+    console.log("Admin id", result);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Student not found" });
     res.json({ success: true, message: "Student updated" });
   } catch (err) {

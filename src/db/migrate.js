@@ -24,7 +24,7 @@
     name        VARCHAR(100)  NOT NULL,
     email       VARCHAR(150)  NOT NULL UNIQUE,
     password    VARCHAR(255)  NOT NULL,
-
+    role       VARCHAR(255) NOT NULL DEFAULT '',
     address     TEXT,
     created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -44,11 +44,17 @@
     father_name  VARCHAR(100) DEFAULT '',
     father_phone VARCHAR(20)  DEFAULT '',
     course        ENUM('JEE','NEET','Foundation','') DEFAULT '',
-    standard     VARCHAR(10)  DEFAULT '',
+    standard     VARCHAR(50)  DEFAULT '',
     branch       ENUM('branch 1','branch 2', '') DEFAULT '',
     hostel       ENUM('Yes','No', '')      DEFAULT '',
+    school_fee          DECIMAL(10,2) DEFAULT 0.00,
+    hostel_fee          DECIMAL(10,2) DEFAULT 0.00,
+    academy_fee          DECIMAL(10,2) DEFAULT 0.00,
     fee          DECIMAL(10,2) DEFAULT 0.00,
     paid_fee     DECIMAL(10,2) DEFAULT 0.00,
+    dob         DATE         DEFAULT NULL,
+    address     TEXT         ,
+    aadhar      VARCHAR(20)  ,
     created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
@@ -123,6 +129,8 @@
     student_name VARCHAR(100) NOT NULL,
     amount       DECIMAL(10,2) NOT NULL,
     paid_amount  DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    install_date DATE         DEFAULT NULL,
+    transaction_type ENUM('Cash','Online','Cheque', '') NOT NULL DEFAULT '',
     due_date     DATE          DEFAULT NULL,
     status       ENUM('Paid','Partial','Pending','Overdue') NOT NULL DEFAULT 'Pending',
     description  VARCHAR(500)  DEFAULT '',
@@ -190,7 +198,7 @@
     batch_id INT UNSIGNED NOT NULL,
     name VARCHAR(50) NOT NULL,
     CONSTRAINT fk_std_board FOREIGN KEY (board_id) REFERENCES boards(board_id),
-    CONSTRAINT fk_std_batch FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
+    CONSTRAINT fk_std_batch FOREIGN KEY (batch_id) REFERENCES batches(batch_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     -- Subjects
