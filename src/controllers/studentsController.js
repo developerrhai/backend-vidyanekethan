@@ -31,7 +31,7 @@ exports.getAll = async (req, res) => {
 exports.getOne = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "Select * from students WHERE id = ? AND (admin_id = ? OR admin_id = 8)",
+      "Select * from students WHERE id = ? AND (admin_id = ? OR admin_id IN (1,8))",
       [req.params.id, req.admin.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: "Student not found" });
@@ -86,7 +86,7 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const [result] = await db.query(
-      "DELETE FROM students WHERE id = ? AND (admin_id = ? OR admin_id = 8)",
+      "DELETE FROM students WHERE id = ? AND (admin_id = ? OR admin_id IN (1, 8))",
       [req.params.id, req.admin.id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: "Student not found" });
