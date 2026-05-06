@@ -45,7 +45,10 @@ router.post("/", async (req, res) => {
       caste_religion,
       photo,
       admission_type,
-      admission_date,        // ✅ NEW
+      admission_date,
+      school_fees,           // ✅ NEW
+      academy_fees,          // ✅ NEW
+      hostel_fees,           // ✅ NEW
     } = req.body;
 
     // ✅ Validation
@@ -61,6 +64,21 @@ router.post("/", async (req, res) => {
         success: false,
         message: "Invalid email format"
       });
+    }
+
+    // ✅ Fee validation — must be non-negative numbers if provided
+    const parsedSchoolFees  = school_fees  ? parseFloat(school_fees)  : 0;
+    const parsedAcademyFees = academy_fees ? parseFloat(academy_fees) : 0;
+    const parsedHostelFees  = hostel_fees  ? parseFloat(hostel_fees)  : 0;
+
+    if (isNaN(parsedSchoolFees) || parsedSchoolFees < 0) {
+      return res.status(400).json({ success: false, message: "Invalid School/College fee amount" });
+    }
+    if (isNaN(parsedAcademyFees) || parsedAcademyFees < 0) {
+      return res.status(400).json({ success: false, message: "Invalid Academy fee amount" });
+    }
+    if (isNaN(parsedHostelFees) || parsedHostelFees < 0) {
+      return res.status(400).json({ success: false, message: "Invalid Hostel fee amount" });
     }
 
     // ✅ Get admin
@@ -86,14 +104,14 @@ router.post("/", async (req, res) => {
     }
 
     // ✅ Format dates
-    const formattedDob = formatDate(dob);
-    const formattedAdmissionDate = formatDate(admission_date);  // ✅ NEW
+    const formattedDob           = formatDate(dob);
+    const formattedAdmissionDate = formatDate(admission_date);
 
     // ✅ Insert query
     const [result] = await db.query(
       `INSERT INTO students
-      (admin_id, name, phone, email, father_name, father_phone, standard, course, branch, dob, address, aadhar, caste_religion, photo, admission_type, admission_date, fee, paid_fee)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`,
+      (admin_id, name, phone, email, father_name, father_phone, standard, course, branch, dob, address, aadhar, caste_religion, photo, admission_type, admission_date, fee, paid_fee, school_fees, academy_fees, hostel_fees)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?)`,
 
       [
         adminId,
@@ -111,7 +129,10 @@ router.post("/", async (req, res) => {
         caste_religion || "",
         safePhoto,
         admission_type || "",
-        formattedAdmissionDate,           // ✅ NEW
+        formattedAdmissionDate,
+        parsedSchoolFees,              // ✅ NEW
+        parsedAcademyFees,             // ✅ NEW
+        parsedHostelFees,              // ✅ NEW
       ]
     );
 
